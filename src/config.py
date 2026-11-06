@@ -30,3 +30,6 @@ EXPECTED_CUISINES = 20
 MIN_RECIPES = 20
 MIN_COOC = 10
 MIN_NPMI = 0.10
+
+# Reproducibility of randomised algorithms (Louvain, label propagation)
+SEED = 42
