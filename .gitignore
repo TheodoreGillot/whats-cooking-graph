@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Virtual environment
+.venv/
+venv/
+
+# Data: fetched from Kaggle, never committed (competition rules — see README)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/
+
+# Generated results (recreate them by running the pipeline)
+results/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
