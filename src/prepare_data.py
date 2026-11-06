@@ -5,8 +5,6 @@ bipartite and projected graphs, and writes everything under data/processed/.
 """
 import json
 
-import networkx as nx
-
 from config import (
     MIN_COOC,
     MIN_NPMI,
@@ -15,7 +13,7 @@ from config import (
     RAW_DIR,
     TRAIN_FILENAME,
 )
-from graph import build_bipartite, build_ingredient_graph, clean_recipes
+from graph import build_bipartite, build_ingredient_graph, clean_recipes, save_graph
 
 
 def main() -> None:
@@ -36,8 +34,8 @@ def main() -> None:
 
     with (PROCESSED_DIR / "recipes.json").open("w", encoding="utf-8") as handle:
         json.dump(recipes, handle, ensure_ascii=False)
-    nx.write_graphml(bipartite, PROCESSED_DIR / "bipartite.graphml")
-    nx.write_graphml(ingredient_graph, PROCESSED_DIR / "ingredient_graph.graphml")
+    save_graph(bipartite, PROCESSED_DIR / "bipartite.pkl")
+    save_graph(ingredient_graph, PROCESSED_DIR / "ingredient_graph.pkl")
 
     isolated = sum(1 for v in ingredient_graph if ingredient_graph.degree(v) == 0)
     print(f"bipartite: {bipartite.number_of_nodes():,} nodes, {bipartite.number_of_edges():,} edges")
@@ -45,7 +43,7 @@ def main() -> None:
         f"ingredient graph: {ingredient_graph.number_of_nodes():,} nodes, "
         f"{ingredient_graph.number_of_edges():,} edges ({isolated} isolated)"
     )
-    print("wrote data/processed/: recipes.json, bipartite.graphml, ingredient_graph.graphml")
+    print("wrote data/processed/: recipes.json, bipartite.pkl, ingredient_graph.pkl")
 
 
 if __name__ == "__main__":

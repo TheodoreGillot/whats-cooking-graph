@@ -7,6 +7,7 @@ Two stages:
 """
 import itertools
 import math
+import pickle
 from collections import Counter
 
 import networkx as nx
@@ -76,3 +77,15 @@ def build_ingredient_graph(recipes, min_recipes, min_cooc, min_npmi):
                            distance=round(1 - npmi, 6))
 
     return graph
+
+
+def save_graph(graph, path):
+    """Pickle a NetworkX graph, preserving node/edge attribute types."""
+    with open(path, "wb") as handle:
+        pickle.dump(graph, handle)
+
+
+def load_graph(path):
+    """Load a graph saved by save_graph."""
+    with open(path, "rb") as handle:
+        return pickle.load(handle)

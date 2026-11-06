@@ -13,13 +13,14 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 from config import FIGURES_DIR, PROCESSED_DIR, RESULTS_DIR
+from graph import load_graph
 
 
 def main() -> None:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
-    graph = nx.read_graphml(PROCESSED_DIR / "ingredient_graph.graphml")
+    graph = load_graph(PROCESSED_DIR / "ingredient_graph.pkl")
 
     n = graph.number_of_nodes()
     m = graph.number_of_edges()
