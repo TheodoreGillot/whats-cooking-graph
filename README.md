@@ -1,4 +1,4 @@
-# What's Cooking? — a graph analysis
+# What's Cooking? A graph analysis
 
 Graph-analytics project: turn a set of recipes into a graph of ingredients (two
 ingredients are linked when they are cooked together) and investigate whether the
