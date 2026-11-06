@@ -89,3 +89,37 @@ def load_graph(path):
     """Load a graph saved by save_graph."""
     with open(path, "rb") as handle:
         return pickle.load(handle)
+
+
+def ingredient_profiles(recipes, nodes):
+    """Per ingredient: recipe count, home cuisine (max lift) and cuisine diversity.
+
+    lift(c | i) = P(c | i) / P(c): how over-represented cuisine c is among the
+    recipes using ingredient i. Home cuisine = argmax lift; diversity = the
+    normalised entropy of the lift profile (0 = one cuisine, 1 = all cuisines).
+    """
+    total = len(recipes)
+    cuisine_counts = Counter(r["cuisine"] for r in recipes)
+    cuisines = sorted(cuisine_counts)
+
+    per_ingredient = {node: Counter() for node in nodes}
+    for recipe in recipes:
+        for ingredient in recipe["ingredients"]:
+            if ingredient in per_ingredient:
+                per_ingredient[ingredient][recipe["cuisine"]] += 1
+
+    profiles = {}
+    for ingredient, counts in per_ingredient.items():
+        used_in = sum(counts.values())
+        lift = {c: (counts[c] / used_in) / (cuisine_counts[c] / total) for c in cuisines}
+        total_lift = sum(lift.values())
+        distribution = [l / total_lift for l in lift.values() if l > 0]
+        diversity = -sum(p * math.log(p) for p in distribution) / math.log(len(cuisines))
+        home = max(lift, key=lift.get)
+        profiles[ingredient] = {
+            "recipes": used_in,
+            "home_cuisine": home,
+            "home_lift": round(lift[home], 4),
+            "diversity": round(diversity, 4),
+        }
+    return profiles
