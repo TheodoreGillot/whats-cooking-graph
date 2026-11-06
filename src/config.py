@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parent.parent
 # Data layout
 RAW_DIR = ROOT / "data" / "raw"
 PROCESSED_DIR = ROOT / "data" / "processed"
+RESULTS_DIR = ROOT / "results"
+FIGURES_DIR = ROOT / "figures"
 
 # Kaggle competition handle and the file we care about
 COMPETITION = "whats-cooking"

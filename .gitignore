@@ -16,6 +16,7 @@ data/processed/
 
 # Generated results (recreate them by running the pipeline)
 results/
+figures/
 
 # OS / editor
 .DS_Store
