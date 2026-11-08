@@ -9,7 +9,8 @@ are linked when they are cooked together) in order to:
    personalised PageRank on the recipe–ingredient graph, compared with two baselines.
 
 **Status:** data cleaning, the ingredient-graph analysis (`src/run_all.py`), the recommender
-and its evaluation (`notebooks/04_recommender.ipynb`) and the demo app (`app.py`) are in place.
+and its evaluation (`notebooks/04_recommender.ipynb`), the Streamlit demo (`app.py`) and the web
+app (`server.py` + `web/`) are in place.
 
 ## Data
 
@@ -72,6 +73,8 @@ python src/clean_foodcom.py          # 1. clean Food.com -> data/processed/foodc
 python src/run_all.py                # 2. align names + ingredient-graph analysis -> results/, figures/ (about 2 min)
 jupyter notebook notebooks/          # 3. run 04_recommender.ipynb top to bottom (about 15 min)
 streamlit run app.py                 # 4. demo app (needs steps 1 and 3)
+python src/fetch_images.py           # 5. optional: ingredient photos for the web app
+python server.py                     # 6. web app on http://127.0.0.1:8000 (needs steps 1 and 3)
 ```
 
 Every randomised step uses a fixed seed (`SEED = 42` in `src/config.py`, seeds 42 / 0 / 1 in
@@ -309,6 +312,46 @@ The sidebar switches between PageRank and the two baselines, and sets the restar
 The app reads `results/foodcom_ingredient_graph.graphml`, written by the last cell of
 notebook 04.
 
+## Web app (`server.py`, `web/`)
+
+A designed version of the demo: a small FastAPI server around `src/recommend.py` and the
+ingredient graph, and a single page (plain HTML, CSS and JavaScript, no build step).
+
+```bash
+python src/fetch_images.py    # once, optional: ingredient photos
+python server.py              # then open http://127.0.0.1:8000
+```
+
+Five views share the fridge on the left:
+
+- **Cook:** recipes ranked by the chosen method (graph walk, TF-IDF or overlap, switchable in the
+  top bar), with photos of what you have and what is missing, time, rating and the method.
+  "One dish per cuisine family" keeps one recipe per community.
+- **Plan:** search a dish or a recipe. Suggestions appear as you type and only show what the
+  catalogue has: dish names (1- to 3-word phrases found in at least 3 recipe names, with their
+  number of recipes) and the most reviewed matching recipes. A dish shows its usual ingredients
+  (share of the recipes using each), what is already in the fridge and a shopping list to copy,
+  then the versions that contain at least half of its usual ingredients, sorted by how many
+  ingredients would have to be bought. A recipe shows its exact shopping list and its method.
+  A short hand-checked list (`SAME_INGREDIENT` in `server.py`) treats Food.com variants such as
+  garlic / garlic clove or ground beef / lean ground beef as the same item here.
+- **Shop:** ingredients to buy next, ranked by how many of your 30 best-matching recipes use them.
+- **Map:** the ingredient graph, either around your fridge (your ingredients and their strongest
+  NPMI partners) or whole (all 1,340 connected ingredients, ForceAtlas2 layout, each ingredient
+  keeping its three strongest links). The legend names the communities and isolates one on click;
+  clicking an ingredient lists its best partners with their NPMI.
+- **Invent:** a graph-guided new dish. Starting from your ingredients, the graph adds one at a time
+  the ingredient with the highest mean NPMI with everything already chosen, then reports the
+  closest existing recipe (Jaccard similarity). If the `ANTHROPIC_API_KEY` environment variable is
+  set, Claude (`claude-sonnet-5-5`, change it with `CHEF_MODEL`) writes the method for exactly
+  these ingredients; the language model never chooses ingredients. Without a key, everything else
+  works.
+
+The map layout is computed once and cached in `results/foodcom_layout.json`. Cytoscape.js and the
+fonts (Young Serif, Figtree; SIL Open Font License) are stored in `web/`, so the app works offline.
+Ingredient photos come from [TheMealDB](https://www.themealdb.com), free for educational use; they
+are downloaded locally into `data/images/` and not committed.
+
 ## Notebooks
 
 ```bash
@@ -325,6 +368,8 @@ jupyter notebook notebooks/
 
 ```
 app.py                  Streamlit demo
+server.py               web app: FastAPI server for web/
+web/                    web app page (index.html, style.css, app.js, vendored Cytoscape.js and fonts)
 src/
   config.py             shared paths, dataset expectations, graph parameters, seed
   fetch_data.py         download the What's Cooking data with kagglehub
@@ -339,6 +384,7 @@ src/
   sensitivity.py        sensitivity to the graph thresholds
   run_all.py            run the analysis scripts in order
   recommend.py          recipe recommender (personalised PageRank + baselines)
+  fetch_images.py       download ingredient photos from TheMealDB (web app)
 notebooks/
   01_eda_whats_cooking.ipynb
   02_eda_foodcom.ipynb
@@ -346,6 +392,7 @@ notebooks/
 data/
   raw/                  fetched files (gitignored)
   processed/            derived datasets (gitignored)
+  images/               ingredient photos (gitignored)
 results/                tables and graph files written by the pipeline (gitignored)
 figures/                figures written by the pipeline (gitignored)
 ```
@@ -370,3 +417,5 @@ figures/                figures written by the pipeline (gitignored)
   principles of food pairing.* Scientific Reports.
 - Teng, C.-Y., Lin, Y.-R., Adamic, L. A. (2012). *Recipe recommendation using ingredient
   networks.* Proceedings of the ACM Web Science Conference.
+- Jacomy, M., Venturini, T., Heymann, S., Bastian, M. (2014). *ForceAtlas2, a continuous graph
+  layout algorithm for handy network visualization.* PLoS ONE.

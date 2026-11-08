@@ -14,6 +14,9 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/
 
+# Ingredient photos: downloaded from TheMealDB by src/fetch_images.py, not ours to share
+data/images/
+
 # Generated results (recreate them by running the pipeline)
 results/
 figures/

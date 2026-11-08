@@ -4,7 +4,9 @@ scipy>=1.10
 pandas>=2.0
 matplotlib>=3.7
 jupyter
-scipy>=1.10
 scikit-learn>=1.3
 streamlit>=1.67
 pyvis>=0.3.2
+fastapi>=0.110
+uvicorn>=0.29
+anthropic>=0.40
