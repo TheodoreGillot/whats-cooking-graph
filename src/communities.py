@@ -6,6 +6,8 @@ robustness across random seeds and resolution values. Writes results/.
 """
 import csv
 import json
+import random
+import statistics
 
 import networkx as nx
 from sklearn.metrics import normalized_mutual_info_score
@@ -73,6 +75,24 @@ def main() -> None:
     nmi_louvain = normalized_mutual_info_score(home_cuisine, louvain_labels)
     nmi_lpa = normalized_mutual_info_score(home_cuisine, lpa_labels)
 
+    # Baseline for NMI: the same partition against shuffled home-cuisine labels.
+    rng = random.Random(SEED)
+    shuffled_nmi = []
+    for _ in range(200):
+        labels = home_cuisine[:]
+        rng.shuffle(labels)
+        shuffled_nmi.append(normalized_mutual_info_score(labels, louvain_labels))
+
+    # Baseline for modularity: same degrees, random wiring (unweighted, because
+    # rewiring does not keep edge weights, so the real graph is compared unweighted too).
+    rewired = nx.Graph(lcc)
+    nx.double_edge_swap(rewired, nswap=5 * rewired.number_of_edges(),
+                        max_tries=100 * rewired.number_of_edges(), seed=SEED)
+    real_unweighted = nx.community.modularity(
+        lcc, nx.community.louvain_communities(lcc, seed=SEED))
+    rewired_unweighted = nx.community.modularity(
+        rewired, nx.community.louvain_communities(rewired, seed=SEED))
+    
     # Robustness across seeds.
     seed_nmi = []
     for seed in [1, 2, 3, 4, 5]:
@@ -108,6 +128,17 @@ def main() -> None:
             "louvain": round(nmi_louvain, 4),
             "label_propagation": round(nmi_lpa, 4),
         },
+
+                "nmi_shuffled_baseline": {
+            "mean": round(statistics.mean(shuffled_nmi), 4),
+            "max": round(max(shuffled_nmi), 4),
+        },
+
+        "modularity_vs_rewired_unweighted": {
+            "real": round(real_unweighted, 4),
+            "rewired": round(rewired_unweighted, 4),
+        },
+
         "robustness_seeds": {
             "nmi": [round(v, 4) for v in seed_nmi],
             "min": round(min(seed_nmi), 4),
@@ -125,6 +156,8 @@ def main() -> None:
     print(f"label propagation: {len(lpa)} communities, modularity {results['label_propagation']['modularity']}")
     print(f"raw-count baseline: {len(raw_louvain)} communities, modularity {results['baseline_raw_count']['modularity']}")
     print(f"NMI with home cuisine: louvain {nmi_louvain:.4f}, lpa {nmi_lpa:.4f}")
+    print(f"NMI with shuffled labels: mean {statistics.mean(shuffled_nmi):.4f}, max {max(shuffled_nmi):.4f}")
+    print(f"unweighted modularity: real {real_unweighted:.4f} vs degree-preserving rewired {rewired_unweighted:.4f}")
     print(f"seed NMI range: {min(seed_nmi):.3f}-{max(seed_nmi):.3f}")
     print(f"resolutions: {resolution_counts}")
     print("wrote results/communities.json, results/community_profiles.csv")
