@@ -202,7 +202,7 @@ filter, salt is linked to almost every ingredient.
 | `prepare_data.py` | bipartite and ingredient graphs | `data/processed/recipes.json`, `bipartite.pkl`, `ingredient_graph.pkl` |
 | `structure.py` | size, density, degrees, components, diameter, radius, average path, clustering | `results/structure.json`, `figures/degree_distribution.png` |
 | `centrality.py` | degree, strength, betweenness (unweighted and with `distance`), closeness, eigenvector, PageRank; Spearman correlations | `results/top10.csv`, `spearman.csv`, `centrality.json`, `figures/betweenness_vs_diversity.png` |
-| `communities.py` | Louvain (weight `npmi`), label propagation, raw-count baseline, NMI with home cuisine, shuffled-label baseline, degree-preserving null model, robustness to seeds and resolution | `results/communities.json`, `community_profiles.csv` |
+| `communities.py` | Louvain (weight `npmi`), label propagation, raw-count baseline, NMI with home cuisine, shuffled-label baseline, degree-preserving null model, robustness to seeds and resolution | `results/communities.json`, `community_profiles.csv`, `figures/community_cuisine_heatmap.png` |
 | `sensitivity.py` | the same graph for 27 combinations of the three thresholds | `results/sensitivity.csv` |
 
 ### Expected results

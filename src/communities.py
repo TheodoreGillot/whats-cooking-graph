@@ -9,10 +9,17 @@ import json
 import random
 import statistics
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import networkx as nx
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.ticker import PercentFormatter
 from sklearn.metrics import normalized_mutual_info_score
 
 from config import (
+    FIGURES_DIR,
     MIN_COOC,
     MIN_RECIPES,
     PROCESSED_DIR,
@@ -151,6 +158,7 @@ def main() -> None:
         json.dump(results, handle, indent=2, ensure_ascii=False)
 
     _write_community_profiles(lcc, louvain, profiles)
+    _plot_community_cuisines(lcc, louvain, profiles, nmi_louvain, statistics.mean(shuffled_nmi))
 
     print(f"louvain: {len(louvain)} communities, modularity {results['louvain']['modularity']}")
     print(f"label propagation: {len(lpa)} communities, modularity {results['label_propagation']['modularity']}")
@@ -160,7 +168,8 @@ def main() -> None:
     print(f"unweighted modularity: real {real_unweighted:.4f} vs degree-preserving rewired {rewired_unweighted:.4f}")
     print(f"seed NMI range: {min(seed_nmi):.3f}-{max(seed_nmi):.3f}")
     print(f"resolutions: {resolution_counts}")
-    print("wrote results/communities.json, results/community_profiles.csv")
+    print("wrote results/communities.json, results/community_profiles.csv, "
+          "figures/community_cuisine_heatmap.png")
 
 
 def _write_community_profiles(graph, partition, profiles):
@@ -184,6 +193,48 @@ def _write_community_profiles(graph, partition, profiles):
             )
 
             writer.writerow([index, len(community), dominant, top_ingredients])
+
+
+def _plot_community_cuisines(graph, partition, profiles, nmi, nmi_shuffled):
+    """Heatmap: share of each community's ingredients by home cuisine (rows sum to 100%)."""
+    communities = sorted(partition, key=len, reverse=True)
+    cuisines = sorted({p["home_cuisine"] for p in profiles.values()})
+    share = np.zeros((len(communities), len(cuisines)))
+    for i, community in enumerate(communities):
+        for node in community:
+            share[i, cuisines.index(profiles[node]["home_cuisine"])] += 1
+        share[i] /= len(community)
+
+    # Order the cuisines by the community where they weigh most: blocks on the diagonal.
+    order = sorted(range(len(cuisines)), key=lambda j: (share[:, j].argmax(), -share[:, j].max()))
+    share = share[:, order]
+    names = [cuisines[j].replace("_us", " US").replace("_", "/") for j in order]
+    rows = []
+    for i, community in enumerate(communities):
+        inside = graph.subgraph(community).degree()  # most connected inside the community
+        top = [n for n, _ in sorted(inside, key=lambda kv: -kv[1])[:3]]
+        rows.append(f"{i + 1}. {', '.join(top)} ({len(community)})")
+
+    basil = LinearSegmentedColormap.from_list("basil", ["#f3f6f1", "#2d6a51", "#16382a"])
+    fig, ax = plt.subplots(figsize=(12, 0.55 * len(communities) + 2.2))
+    image = ax.imshow(share, cmap=basil, vmin=0, vmax=share.max(), aspect="auto")
+    for i in range(share.shape[0]):
+        for j in range(share.shape[1]):
+            if share[i, j] >= 0.05:
+                ax.text(j, i, f"{share[i, j]:.0%}", ha="center", va="center", fontsize=8,
+                        color="white" if share[i, j] > 0.5 * share.max() else "#18211c")
+    ax.set_xticks(range(len(names)), names, rotation=45, ha="right")
+    ax.set_yticks(range(len(rows)), rows)
+    ax.tick_params(length=0)
+    for side in ax.spines.values():
+        side.set_visible(False)
+    ax.set_title(f"Home cuisine of the ingredients in each Louvain community "
+                 f"(NMI {nmi:.2f}, shuffled labels {nmi_shuffled:.3f})", loc="left", fontsize=11)
+    fig.colorbar(image, ax=ax, fraction=0.025, pad=0.01, format=PercentFormatter(xmax=1, decimals=0),
+                 label="share of the community's ingredients")
+    FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIGURES_DIR / "community_cuisine_heatmap.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
 
 
 if __name__ == "__main__":
