@@ -10,8 +10,6 @@ from config import (
     MIN_NPMI,
     MIN_RECIPES,
     PROCESSED_DIR,
-    RAW_DIR,
-    TRAIN_FILENAME,
 )
 from graph import build_bipartite, build_ingredient_graph, clean_recipes, save_graph
 
@@ -19,9 +17,9 @@ from graph import build_bipartite, build_ingredient_graph, clean_recipes, save_g
 def main() -> None:
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
-    raw_path = RAW_DIR / TRAIN_FILENAME
+    raw_path = PROCESSED_DIR / "whats_cooking_canonical.json"
     if not raw_path.exists():
-        raise SystemExit(f"{raw_path} missing: run `python src/fetch_data.py` first.")
+        raise SystemExit(f"{raw_path} missing: run `python src/clean_whatscooking.py` first.")
 
     with raw_path.open(encoding="utf-8") as handle:
         raw_recipes = json.load(handle)

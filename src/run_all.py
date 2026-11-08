@@ -2,7 +2,7 @@
 
 Usage: python src/run_all.py
 
-Runs prepare -> structure -> centrality -> communities -> sensitivity.
+Runs clean_whatscooking -> prepare -> structure -> centrality -> communities -> sensitivity.
 fetch_data.py and validate_data.py are one-time setup steps (see README).
 """
 import runpy
@@ -12,6 +12,7 @@ from pathlib import Path
 HERE = Path(__file__).parent
 
 STEPS = [
+    "clean_whatscooking.py",
     "prepare_data.py",
     "structure.py",
     "centrality.py",
