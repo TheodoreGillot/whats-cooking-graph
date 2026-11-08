@@ -15,7 +15,7 @@ import networkx as nx
 
 def normalize(name: str) -> str:
     """Lowercase, drop ®/™ and collapse whitespace. Synonyms are deliberately
-    not merged (e.g. "garlic" vs "garlic cloves"); this is a known limitation."""
+    not merged (e.g. "garlic" vs "garlic cloves"); this is a known limitation, (see clean_whatscooking.py)."""
     return " ".join(name.lower().replace("®", "").replace("™", "").split())
 
 
