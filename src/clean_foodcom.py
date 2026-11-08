@@ -48,10 +48,11 @@ CANONICAL_FIXES = {
     r"\bcouscou\b": "couscous",
     r"\bcre mushroom\b": "cremini mushroom",  # "mini" cut out of "cremini"
     r"^ature ": "",                           # "mini" cut out of "miniature"
+    r"\bchily\b": "chili",                    # chilies -> chily (like berries -> berry)
 }
 
 # Merges with no shared word that are correct (synonyms, brands)
-ACCEPTED = {"annatto", "artificial sweetener", "cooking spray", "scallion"}
+ACCEPTED = {"annatto", "artificial sweetener", "chili", "cooking spray", "scallion"}
 
 KEEP_RAW = {"green onion dip", "green onion dip mix", "dried green onion flakes"}
 
