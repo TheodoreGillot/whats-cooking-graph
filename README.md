@@ -8,8 +8,9 @@ are linked when they are cooked together) in order to:
 2. **recommend recipes**: given the ingredients a user has, rank existing recipes using
    the recipe–ingredient graph.
 
-**Status:** data acquisition and exploratory analysis done (`notebooks/01`, `notebooks/02`).
-Next: cleaning and a shared ingredient vocabulary, then the graph analysis and the recommender.
+**Status:** data acquisition, exploratory analysis (`notebooks/01`, `notebooks/02`), Food.com
+cleaning (`src/clean_foodcom.py`) and the ingredient-graph analysis pipeline (`src/run_all.py`)
+are in place. Next: the recipe recommender (personalised PageRank on the recipe–ingredient graph).
 
 ## Data
 
