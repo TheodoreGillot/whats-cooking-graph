@@ -118,8 +118,7 @@ if __name__ == "__main__":
 
     # Compare the two methods on one basket
     q = query_vector(["rice", "ginger", "soy sauce"], index, B.shape[1])
-    for name, scores in [("overlap", score_overlap(B, q)), ("tf-idf", score_tfidf(B, q)),
-                         ("ppr", score_ppr(B, q)[0])]:
+    for name, scores in [("overlap", score_overlap(B, q)), ("tf-idf", score_tfidf(B, q)), ("ppr", score_ppr(B, q)[0])]:
         top = np.argsort(-scores)[:5]
         print(f"\n{name}: recipes tied with the best score:", (scores == scores[top[0]]).sum())
         print(df.iloc[top][["name", "n_reviews"]].assign(score=scores[top]))
